@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Data;
 
 namespace Calculator
 {
@@ -8,6 +9,7 @@ namespace Calculator
         private double result = 0;
         private string operation = "";
         private bool isOperationPerformed = false;
+        private string expression = "";
 
         public frm1()
         {
@@ -18,94 +20,88 @@ namespace Calculator
         {
             Button button = (Button)sender;
 
-            if (button.Text == "0" || button.Text == "1" || button.Text == "2" ||
-                button.Text == "3" || button.Text == "4" || button.Text == "5" ||
-                button.Text == "6" || button.Text == "7" || button.Text == "8" ||
-                button.Text == "9" || button.Text == ".")
+            // Handle number and decimal point inputs
+            if (char.IsDigit(button.Text[0]) || button.Text == ".")
             {
-                if ((lbl1.Text == "0") || isOperationPerformed)
-                    lbl1.Text = "";
-
-                if (operation == "" && isOperationPerformed)
+                if (isOperationPerformed || lbl1.Text == "0")
                 {
                     lbl1.Text = "";
-                    lbl2.Text = "";
-                }
-                if(button.Text == "." && lbl1.Text.Contains(".")) 
-                { 
-                
-                }else if (button.Text == "." && !lbl1.Text.Contains(".") && lbl1.Text == "")
-                {
                     isOperationPerformed = false;
-                    lbl1.Text += "0"+button.Text;
                 }
-                else 
-                  {
-                    isOperationPerformed = false;
-                    lbl1.Text += button.Text;
-                  }
 
-                
+                if (button.Text == "." && lbl1.Text.Contains("."))
+                    return;
+
+                lbl1.Text += button.Text;
             }
-       
+
+            // Handle operators
             else if (button.Text == "+" || button.Text == "-" || button.Text == "x" || button.Text == "/")
             {
-                if (button.Text == "x")
-                    operation = "*";
-                else
-                    operation = button.Text;
+                if (!isOperationPerformed)
+                {
+                    if (!string.IsNullOrEmpty(expression))
+                    {
+                        expression += lbl1.Text;
+                    }
+                    else
+                    {
+                        expression = lbl1.Text;
+                    }
+                    expression += " " + button.Text + " ";
+                }
 
-                result = Double.Parse(lbl1.Text);
-                lbl2.Text = lbl1.Text + button.Text;
+                operation = button.Text == "x" ? "*" : button.Text;
+
+                lbl2.Text = expression;
+                lbl1.Text = "0";
                 isOperationPerformed = true;
             }
-       
+
+            // Handle equals button
             else if (button.Text == "=")
             {
-                isOperationPerformed = true;
-        
-                lbl2.Text += lbl1.Text;
-
-                switch (operation)
-                {
-                    case "+":
-                        lbl1.Text = (result + Double.Parse(lbl1.Text)).ToString();
-                        break;
-                    case "-":
-                        lbl1.Text = (result - Double.Parse(lbl1.Text)).ToString();
-                        break;
-                    case "*":
-                        lbl1.Text = (result * Double.Parse(lbl1.Text)).ToString();
-                        break;
-                    case "/":
-                        lbl1.Text = (result / Double.Parse(lbl1.Text)).ToString();
-                        break;
-                }
-                result = Double.Parse(lbl1.Text);
+                expression += lbl1.Text;
+                lbl2.Text = expression;
+                lbl1.Text = Compute(expression).ToString();
+                expression = "";
                 operation = "";
             }
-          
+
+            // Handle clear button
             else if (button.Text == "C")
             {
                 lbl1.Text = "0";
                 lbl2.Text = "";
                 result = 0;
                 operation = "";
+                expression = "";
             }
-      
+
+            // Handle delete button
             else if (button.Text == "DEL")
             {
                 if (lbl1.Text.Length > 1)
                 {
-                  
                     lbl1.Text = lbl1.Text.Substring(0, lbl1.Text.Length - 1);
                 }
                 else
                 {
-                  
                     lbl1.Text = "0";
                 }
             }
+        }
+
+        private double Compute(string expression)
+        {
+                expression = expression.Replace("x", "*"); // Replace 'x' with '*' for multiplication
+                var table = new DataTable();
+                object result = table.Compute(expression, "");
+                return Convert.ToDouble(result);
+        }
+
+        private void lbl1_Click(object sender, EventArgs e)
+        {
         }
     }
 }

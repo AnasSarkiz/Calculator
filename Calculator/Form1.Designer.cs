@@ -206,6 +206,7 @@
             this.lbl1.TabIndex = 13;
             this.lbl1.Text = "0";
             this.lbl1.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            this.lbl1.Click += new System.EventHandler(this.lbl1_Click);
             // 
             // button1
             // 
